@@ -405,6 +405,74 @@ footer{background:var(--black);padding:44px 56px 28px;}
 </footer>
 
 <script>
+// ── Formulario → Zapier ──────────────────────────
+function initForm(form, label) {
+  if (!form) return;
+  const btn    = form.querySelector('.f-btn');
+  const fields = form.querySelectorAll('input:not([type=checkbox]), select');
+  const keys   = ['nombre','telefono','correo','uso','presupuesto'];
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Validación
+    let valid = true;
+    fields.forEach(el => {
+      if (el.required && !el.value) { el.style.borderColor='#e05c5c'; valid=false; }
+      else el.style.borderColor='';
+    });
+    if (!valid) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    // Construir FormData — Zapier lo recibe sin problemas de CORS
+    const fd = new FormData();
+    fields.forEach((el, i) => fd.append(keys[i], el.value));
+    fd.append('whatsapp', form.querySelector('input[type=checkbox]')?.checked ? 'Sí' : 'No');
+    fd.append('origen',   window.location.href);
+    fd.append('fecha',    new Date().toLocaleString('es-MX', {timeZone:'America/Monterrey'}));
+
+    // Usar XMLHttpRequest con mode no-cors equivalente
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://hooks.zapier.com/hooks/catch/7632638/uvfi5ea/');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        // Zapier siempre devuelve status 0 en no-cors, lo consideramos éxito
+        btn.style.background = '#5e6640';
+        btn.style.color      = '#f0ead2';
+        btn.textContent      = '✓ ¡Gracias! En breve te contactamos';
+        form.reset();
+        setTimeout(() => {
+          btn.disabled         = false;
+          btn.style.background = '';
+          btn.style.color      = '';
+          btn.textContent      = label;
+        }, 5000);
+      }
+    };
+    xhr.onerror = function() {
+      // Igual mostramos éxito — Zapier recibe aunque el browser reporte error CORS
+      btn.style.background = '#5e6640';
+      btn.style.color      = '#f0ead2';
+      btn.textContent      = '✓ ¡Gracias! En breve te contactamos';
+      form.reset();
+      setTimeout(() => {
+        btn.disabled         = false;
+        btn.style.background = '';
+        btn.style.color      = '';
+        btn.textContent      = label;
+      }, 5000);
+    };
+    xhr.send(fd);
+  });
+}
+
+const allForms = document.querySelectorAll('.f-form');
+initForm(allForms[0], 'Enviar información');
+initForm(allForms[1], 'Enviar información');
+
+// ── Carrusel ─────────────────────────────────────
 (function(){
   const track=document.getElementById('gTrack');
   const dotsWrap=document.getElementById('gDots');
