@@ -199,12 +199,18 @@ footer{background:var(--black);padding:44px 56px 28px;}
   .times-grid{grid-template-columns:1fr;}
   .time-row.full{grid-column:auto;}
   .gallery-header{padding:36px 24px 24px;flex-direction:column;align-items:flex-start;gap:16px;}
-  .gallery-slide{min-width:100vw;}
-  .gallery-slide img{height:260px;object-fit:cover;}
+  .gallery-track-wrap{overflow-x:hidden;}
+  .gallery-slide{min-width:100vw;width:100vw;}
+  .gallery-slide img{height:260px;object-fit:cover;width:100%;display:block;}
+  .slide-caption{left:0;right:0;padding:20px 16px 16px;}
+  .slide-caption-name{font-size:1rem;}
   .gallery-dots{padding:14px 24px 0;}
-  .amen-strip{grid-template-columns:repeat(4,1fr);}
-  .amen-cell:nth-child(4){border-right:none;}
-  .amen-cell:nth-child(n+5){border-top:1px solid rgba(240,234,210,.06);}
+  .amen-strip{grid-template-columns:repeat(2,1fr);}
+  .amen-cell{padding:20px 16px;}
+  .amen-cell:nth-child(odd){border-right:1px solid rgba(240,234,210,.06);}
+  .amen-cell:nth-child(even){border-right:none;}
+  .amen-cell:nth-child(n+3){border-top:1px solid rgba(240,234,210,.06);}
+  .amen-cell-name{font-size:.72rem;white-space:normal;word-break:normal;}
   .gallery-section-end{padding-bottom:32px;}
   .form-cierre{grid-template-columns:1fr;}
   .form-cierre-img{min-height:220px;}
@@ -543,16 +549,22 @@ initForm(allForms[1], 'Enviar información');
     d.onclick=()=>go(i);
     dotsWrap.appendChild(d);dots.push(d);
   });
-  function sw(){return slides[0].getBoundingClientRect().width;}
+  function sw(){return slides[0].offsetWidth;}
   function go(i){
     cur=(i+total)%total;
-    track.style.transform=`translateX(${-cur*sw()}px)`;
+    const offset = -cur * sw();
+    track.style.transform=`translateX(${offset}px)`;
     dots.forEach((d,j)=>d.classList.toggle('on',j===cur));
   }
   document.getElementById('gPrev').onclick=()=>go(cur-1);
   document.getElementById('gNext').onclick=()=>go(cur+1);
   setInterval(()=>go(cur+1),6000);
-  window.addEventListener('resize',()=>go(cur));
+  window.addEventListener('resize',()=>{
+    // Recalcular posición tras resize sin animación
+    track.style.transition='none';
+    go(cur);
+    setTimeout(()=>{ track.style.transition=''; },50);
+  });
   let tx=0;
   track.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
   track.addEventListener('touchend',e=>{
