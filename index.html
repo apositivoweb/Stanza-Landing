@@ -129,8 +129,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--bl
 .gallery-section{background:var(--black);}
 .gallery-header{display:flex;justify-content:space-between;align-items:flex-end;padding:48px 56px 32px;}
 .gallery-header .section-h2{color:var(--cream);}
-.gallery-nav{display:flex;gap:8px;}
-.g-btn{width:40px;height:40px;border:1px solid rgba(240,234,210,.2);background:transparent;color:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:1rem;flex-shrink:0;}
+.gallery-nav{display:none;}
+.g-btn{width:44px;height:44px;border:1px solid rgba(240,234,210,.25);background:rgba(26,26,24,.55);backdrop-filter:blur(8px);color:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .22s;font-size:1rem;flex-shrink:0;}
+.g-btn:hover{border-color:var(--lime);color:var(--lime);background:rgba(26,26,24,.8);}
+.gallery-track-outer{position:relative;}
+.g-btn-over{position:absolute;top:50%;transform:translateY(-50%);z-index:10;}
+.g-btn-left{left:16px;}
+.g-btn-right{right:16px;}
 .g-btn:hover{border-color:var(--lime);color:var(--lime);}
 .gallery-track-wrap{overflow:hidden;}
 .gallery-track{display:flex;transition:transform .5s cubic-bezier(.4,0,.2,1);will-change:transform;}
@@ -356,11 +361,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="section-tag">Vida en comunidad</div>
       <h2 class="section-h2">Amenidades para<br><strong>vivir diferente.</strong></h2>
     </div>
-    <div class="gallery-nav">
-      <button class="g-btn" id="gPrev">&#8592;</button>
-      <button class="g-btn" id="gNext">&#8594;</button>
-    </div>
+
   </div>
+  <div class="gallery-track-outer">
+  <button class="g-btn g-btn-over g-btn-left" id="gPrev">&#8592;</button>
   <div class="gallery-track-wrap">
     <div class="gallery-track" id="gTrack">
             <div class="gallery-slide">
@@ -420,6 +424,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     </div>
   </div>
+  <button class="g-btn g-btn-over g-btn-right" id="gNext">&#8594;</button>
+</div>
   <div class="gallery-dots" id="gDots"></div>
   <div class="amen-strip">
     <div class="amen-cell"><svg viewBox="0 0 24 24"><path d="M2 20h20M7 20V10a5 5 0 0110 0v10M12 10v10"/></svg><div class="amen-cell-name">Alberca</div></div>
