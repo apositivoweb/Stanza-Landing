@@ -439,30 +439,12 @@ function initForm(form, label) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
         // Zapier siempre devuelve status 0 en no-cors, lo consideramos éxito
-        btn.style.background = '#5e6640';
-        btn.style.color      = '#f0ead2';
-        btn.textContent      = '✓ ¡Gracias! En breve te contactamos';
-        form.reset();
-        setTimeout(() => {
-          btn.disabled         = false;
-          btn.style.background = '';
-          btn.style.color      = '';
-          btn.textContent      = label;
-        }, 5000);
+        window.location.href = 'gracias.html';
       }
     };
     xhr.onerror = function() {
-      // Igual mostramos éxito — Zapier recibe aunque el browser reporte error CORS
-      btn.style.background = '#5e6640';
-      btn.style.color      = '#f0ead2';
-      btn.textContent      = '✓ ¡Gracias! En breve te contactamos';
-      form.reset();
-      setTimeout(() => {
-        btn.disabled         = false;
-        btn.style.background = '';
-        btn.style.color      = '';
-        btn.textContent      = label;
-      }, 5000);
+      // Zapier recibe aunque el browser reporte error CORS — redirigir igual
+      window.location.href = 'gracias.html';
     };
     xhr.send(fd);
   });
