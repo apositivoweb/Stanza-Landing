@@ -1,4 +1,47 @@
-<!DOCTYPE html>
+// ── Carrusel diferenciadores — siempre activo ────────────────────
+(function(){
+  const grid    = document.getElementById('difGrid');
+  const dots    = document.getElementById('difDots');
+  const prevBtn = document.getElementById('difPrev');
+  const nextBtn = document.getElementById('difNext');
+  if(!grid) return;
+
+  const cols = grid.querySelectorAll('.dif-col');
+  if(!cols.length) return;
+
+  const total = cols.length;
+  let cur = 0;
+
+  if(dots){
+    cols.forEach((_,i)=>{
+      const d = document.createElement('div');
+      d.className = 'dif-dot' + (i===0?' on':'');
+      d.onclick = ()=> go(i);
+      dots.appendChild(d);
+    });
+  }
+
+  function getDots(){ return dots ? dots.querySelectorAll('.dif-dot') : []; }
+
+  function go(i){
+    cur = (i + total) % total;
+    grid.style.transform = 'translateX(-' + (cur * 100) + '%)';
+    getDots().forEach(function(d,j){ d.classList.toggle('on', j===cur); });
+  }
+
+  if(prevBtn) prevBtn.onclick = function(){ go(cur-1); };
+  if(nextBtn) nextBtn.onclick = function(){ go(cur+1); };
+
+  var tx=0;
+  grid.addEventListener('touchstart', function(e){ tx=e.touches[0].clientX; },{passive:true});
+  grid.addEventListener('touchend',   function(e){
+    var dx = e.changedTouches[0].clientX - tx;
+    if(Math.abs(dx)>40) go(dx<0 ? cur+1 : cur-1);
+  });
+
+  setInterval(function(){ go(cur+1); }, 5000);
+  go(0);
+})();<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -97,7 +140,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--bl
 .section-tag{font-size:.58rem;letter-spacing:.34em;text-transform:uppercase;color:var(--lime);font-weight:600;margin-bottom:10px;}
 .section-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(1.9rem,3.5vw,2.8rem);font-weight:300;line-height:1.1;}
 .section-h2 strong{font-weight:600;}
-.dif-grid{display:grid;grid-template-columns:repeat(3,1fr);margin-top:44px;border-top:1px solid rgba(26,26,24,.1);}
+.dif-grid{display:flex;overflow:hidden;margin-top:28px;}
+.dif-col{min-width:100%;flex-shrink:0;padding:40px 48px;background:var(--off-white);transition:transform .4s cubic-bezier(.4,0,.2,1);}
+.dif-col h3{color:var(--black);font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;margin-bottom:10px;}
+.dif-col p{color:rgba(26,26,24,.62);font-size:.92rem;line-height:1.72;}
+.dif-num{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;color:rgba(188,191,66,.28);line-height:1;margin-bottom:14px;}
+.dif-icon svg{width:38px;height:38px;stroke:var(--olive);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin-bottom:14px;display:block;}
+.dif-carousel-wrap{position:relative;}
+.dif-nav{display:flex;justify-content:space-between;align-items:center;padding:20px 48px 0;}
+.dif-nav-dots{display:flex;gap:8px;align-items:center;}
+.dif-dot{width:6px;height:6px;border-radius:50%;background:rgba(26,26,24,.18);cursor:pointer;transition:all .22s;}
+.dif-dot.on{background:var(--lime);width:22px;border-radius:3px;}
+.dif-nav-arrows{display:flex;gap:10px;}
+.dif-arrow{width:40px;height:40px;background:transparent;border:1px solid rgba(26,26,24,.18);color:var(--black);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;transition:all .22s;}
+.dif-arrow:hover{background:var(--lime);border-color:var(--lime);}
 .dif-col{padding:32px 28px 32px 0;border-right:1px solid rgba(26,26,24,.08);}
 .dif-col:first-child{padding-left:0;}
 .dif-col:last-child{border-right:none;padding-right:0;}
@@ -197,15 +253,8 @@ footer{background:var(--black);padding:44px 56px 28px;}
   .stat-item:nth-child(3){border-top:1px solid rgba(240,234,210,.07);}
   .dif-section{padding:48px 24px;}
   .dif-grid{overflow:hidden;border-top:none;margin-top:0;}
-  .dif-col{border-right:none;border-bottom:none;padding:28px 20px;background:var(--off-white);}
-  .dif-col.carousel-active{min-width:100%;flex-shrink:0;transition:transform .4s cubic-bezier(.4,0,.2,1);}
-  .dif-col h3{color:var(--black) !important;font-size:1.2rem;}
-  .dif-col p{color:rgba(26,26,24,.65) !important;font-size:.88rem;}
-  .dif-num{color:rgba(188,191,66,.35) !important;}
-  .dif-carousel-wrap{position:relative;overflow:hidden;margin-top:28px;}
-  .dif-arrow{width:36px;height:36px;background:rgba(26,26,24,.08);border:1px solid rgba(26,26,24,.18);color:var(--black);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;transition:all .2s;flex-shrink:0;}
-  .dif-arrow:hover{background:var(--lime);border-color:var(--lime);}
-  .dif-indicators{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:20px;}
+  .dif-col{padding:32px 28px;}
+  .dif-nav{padding:16px 28px 0;}
   .dif-dot{width:6px;height:6px;border-radius:50%;background:rgba(26,26,24,.2);cursor:pointer;transition:all .2s;}
   .dif-dot.on{background:var(--lime);width:20px;border-radius:3px;}
   .ubicacion-inner{grid-template-columns:1fr;}
@@ -268,6 +317,10 @@ footer{background:var(--black);padding:44px 56px 28px;}
   .wa-float svg { width: 26px; height: 26px; }
 }
 </style>
+<!-- Meta Pixel Code -->
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init', '1004429138753816');fbq('track', 'PageView');</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1004429138753816&ev=PageView&noscript=1"/></noscript>
+<!-- End Meta Pixel Code -->
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -347,11 +400,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p>Estacionamiento frente a tu residencia. Sin sótanos, sin esperas. Tu espacio como en una casa.</p>
       </div>
     </div>
-    <div class="dif-indicators" id="difDots">
-    <button class="dif-arrow" id="difPrev" aria-label="Anterior">&#8592;</button>
-    <div class="dif-dots-inner" id="difDotsInner" style="display:flex;gap:8px;align-items:center;"></div>
-    <button class="dif-arrow" id="difNext" aria-label="Siguiente">&#8594;</button>
-  </div>
+    <div class="dif-nav">
+      <div class="dif-nav-dots" id="difDots"></div>
+      <div class="dif-nav-arrows">
+        <button class="dif-arrow" id="difPrev" aria-label="Anterior">&#8592;</button>
+        <button class="dif-arrow" id="difNext" aria-label="Siguiente">&#8594;</button>
+      </div>
+    </div>
   </div>
   </div>
 </section>
