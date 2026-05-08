@@ -196,22 +196,30 @@ footer{background:var(--black);padding:44px 56px 28px;}
   .stat-item:nth-child(2){border-right:none;}
   .stat-item:nth-child(3){border-top:1px solid rgba(240,234,210,.07);}
   .dif-section{padding:48px 24px;}
-  .dif-grid{display:flex;overflow:hidden;border-top:none;margin-top:0;}
-  .dif-col{min-width:100%;flex-shrink:0;border-right:none;border-bottom:none;padding:24px 0;transition:transform .4s cubic-bezier(.4,0,.2,1);}
+  .dif-grid{overflow:hidden;border-top:none;margin-top:0;}
+  .dif-col{border-right:none;border-bottom:none;padding:28px 20px;background:var(--off-white);}
+  .dif-col.carousel-active{min-width:100%;flex-shrink:0;transition:transform .4s cubic-bezier(.4,0,.2,1);}
+  .dif-col h3{color:var(--black) !important;font-size:1.2rem;}
+  .dif-col p{color:rgba(26,26,24,.65) !important;font-size:.88rem;}
+  .dif-num{color:rgba(188,191,66,.35) !important;}
   .dif-carousel-wrap{position:relative;overflow:hidden;margin-top:28px;}
-  .dif-indicators{display:flex;justify-content:center;gap:8px;margin-top:16px;}
+  .dif-arrow{width:36px;height:36px;background:rgba(26,26,24,.08);border:1px solid rgba(26,26,24,.18);color:var(--black);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;transition:all .2s;flex-shrink:0;}
+  .dif-arrow:hover{background:var(--lime);border-color:var(--lime);}
+  .dif-indicators{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:20px;}
   .dif-dot{width:6px;height:6px;border-radius:50%;background:rgba(26,26,24,.2);cursor:pointer;transition:all .2s;}
   .dif-dot.on{background:var(--lime);width:20px;border-radius:3px;}
   .ubicacion-inner{grid-template-columns:1fr;}
   .map-side iframe{min-height:260px;}
   .times-side{padding:24px 20px;}
-  .times-grid{grid-template-columns:1fr;}
-  .time-row.full{grid-column:auto;}
+  .times-grid{grid-template-columns:1fr 1fr;gap:0 12px;}
+  .time-row.full{grid-column:1/-1;}
   .time-row{padding:9px 0;}
-  .time-min{font-size:1.4rem;min-width:42px;}
-  .time-dest{font-size:.78rem;}
-  .time-dest small{font-size:.64rem;}
+  .time-min{font-size:1.3rem;min-width:38px;}
+  .time-min span{font-size:.52rem;}
+  .time-dest{font-size:.76rem;}
+  .time-dest small{font-size:.62rem;}
   .times-side .section-h2{font-size:1.5rem;margin-bottom:16px;}
+  .times-side{padding:28px 20px;}
   .gallery-header{padding:36px 24px 24px;flex-direction:column;align-items:flex-start;gap:16px;}
   .gallery-track-wrap{overflow-x:hidden;}
   .gallery-slide{min-width:100vw;width:100vw;}
@@ -318,7 +326,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="dif-inner">
     <div class="section-tag">Por qué Stanza</div>
     <h2 class="section-h2">No es un departamento.<br><strong>Es una residencia vertical.</strong></h2>
-    <div class="dif-carousel-wrap" id="difCarousel"><div class="dif-grid" id="difGrid">
+    <div class="dif-carousel-wrap" id="difCarousel">
+  <div class="dif-grid" id="difGrid">
       <div class="dif-col">
         <div class="dif-num">01</div>
         <div class="dif-icon"><svg viewBox="0 0 36 36"><path d="M4 16L18 4l14 12v16a2 2 0 01-2 2H6a2 2 0 01-2-2V16z"/><path d="M14 32V20h8v12"/></svg></div>
@@ -338,7 +347,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p>Estacionamiento frente a tu residencia. Sin sótanos, sin esperas. Tu espacio como en una casa.</p>
       </div>
     </div>
-    <div class="dif-indicators" id="difDots"></div>
+    <div class="dif-indicators" id="difDots">
+    <button class="dif-arrow" id="difPrev" aria-label="Anterior">&#8592;</button>
+    <div class="dif-dots-inner" id="difDotsInner" style="display:flex;gap:8px;align-items:center;"></div>
+    <button class="dif-arrow" id="difNext" aria-label="Siguiente">&#8594;</button>
+  </div>
   </div>
   </div>
 </section>
@@ -604,55 +617,80 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 
 // ── Carrusel diferenciadores (solo mobile) ────────────────────────
 (function(){
-  function initDifCarousel(){
-    const isMobile = window.innerWidth <= 960;
-    const grid   = document.getElementById('difGrid');
-    const dots   = document.getElementById('difDots');
-    if(!grid || !dots) return;
+  const grid    = document.getElementById('difGrid');
+  const dots    = document.getElementById('difDots');
+  const prevBtn = document.getElementById('difPrev');
+  const nextBtn = document.getElementById('difNext');
+  if(!grid || !dots) return;
 
-    const cols = grid.querySelectorAll('.dif-col');
-    if(!cols.length) return;
+  const cols = grid.querySelectorAll('.dif-col');
+  if(!cols.length) return;
 
-    if(!isMobile){
-      // Desktop: reset
-      grid.style.transform = '';
-      dots.style.display = 'none';
-      cols.forEach(c => { c.style.minWidth = ''; });
-      return;
-    }
+  const total = cols.length;
+  let cur = 0;
+  let active = false;
 
-    dots.style.display = 'flex';
-    const total = cols.length;
-    let cur = 0;
+  // Build dots once
+  const dotsInner = document.getElementById('difDotsInner') || dots;
+  cols.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dif-dot' + (i===0?' on':'');
+    d.onclick = ()=> go(i);
+    dotsInner.appendChild(d);
+  });
+  const dotEls = (document.getElementById('difDotsInner')||dots).querySelectorAll('.dif-dot');
 
-    // Build dots if empty
-    if(!dots.children.length){
-      cols.forEach((_,i)=>{
-        const d = document.createElement('div');
-        d.className = 'dif-dot' + (i===0?' on':'');
-        d.onclick = ()=> go(i);
-        dots.appendChild(d);
-      });
-    }
-    const dotEls = dots.querySelectorAll('.dif-dot');
-
-    function go(i){
-      cur = (i + total) % total;
-      grid.style.transform = `translateX(-${cur * 100}%)`;
-      dotEls.forEach((d,j)=> d.classList.toggle('on', j===cur));
-    }
-
-    // Swipe
-    let tx=0;
-    grid.addEventListener('touchstart', e=>{ tx=e.touches[0].clientX; },{passive:true});
-    grid.addEventListener('touchend',   e=>{
-      const dx = e.changedTouches[0].clientX - tx;
-      if(Math.abs(dx)>40) go(dx<0 ? cur+1 : cur-1);
-    });
+  function go(i){
+    cur = (i + total) % total;
+    grid.style.transform = `translateX(-${cur * 100}%)`;
+    dotEls.forEach((d,j)=> d.classList.toggle('on', j===cur));
   }
 
-  initDifCarousel();
-  window.addEventListener('resize', initDifCarousel);
+  if(prevBtn) prevBtn.onclick = ()=> go(cur-1);
+  if(nextBtn) nextBtn.onclick = ()=> go(cur+1);
+
+  // Swipe
+  let tx=0;
+  grid.addEventListener('touchstart', e=>{ tx=e.touches[0].clientX; },{passive:true});
+  grid.addEventListener('touchend',   e=>{
+    const dx = e.changedTouches[0].clientX - tx;
+    if(Math.abs(dx)>40) go(dx<0 ? cur+1 : cur-1);
+  });
+
+  function applyMode(){
+    const isMobile = window.innerWidth <= 960;
+    if(isMobile){
+      // Mobile: activar carrusel via JS
+      grid.style.display = 'flex';
+      grid.style.overflow = 'hidden';
+      cols.forEach(c => {
+        c.style.minWidth = '100%';
+        c.style.flexShrink = '0';
+        c.style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+      });
+      if(dots) dots.style.display = 'flex';
+      if(prevBtn) prevBtn.style.display = 'flex';
+      if(nextBtn) nextBtn.style.display = 'flex';
+      go(cur);
+    } else {
+      // Desktop: layout normal de grid, mostrar todos los cols
+      grid.style.display = 'grid';
+      grid.style.overflow = 'visible';
+      grid.style.transform = '';
+      cols.forEach(c => {
+        c.style.minWidth = '';
+        c.style.flexShrink = '';
+        c.style.transition = '';
+        c.style.transform = '';
+      });
+      if(dots) dots.style.display = 'none';
+      if(prevBtn) prevBtn.style.display = 'none';
+      if(nextBtn) nextBtn.style.display = 'none';
+    }
+  }
+
+  applyMode();
+  window.addEventListener('resize', applyMode);
 })();
 </script>
 
